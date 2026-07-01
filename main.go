@@ -17,6 +17,7 @@ const port = "5465"
 const dbConnectionString = "graffiti.sqlite3"
 const maxMemoryBytesForParsingImage int64 = 1 << 20
 const maxUploadRequestSize int64 = 1 << 20
+const durationPerExpiredImageDeletion = 30 * time.Minute
 
 type App struct {
 	DB *sql.DB
@@ -34,12 +35,42 @@ func main() {
 
 	app.initDb()
 
+	go app.periodicallyRemoveExpiredFiles()
+
 	http.HandleFunc("GET /{$}", app.handleGetHome)
 	http.HandleFunc("GET /image/{id}", app.handleGetImage)
 	http.HandleFunc("POST /image/create", app.handlePostImage)
 
 	fmt.Printf("listening for http requests on http://localhost:%s\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
+}
+
+func (app App) periodicallyRemoveExpiredFiles() {
+	ticker := time.NewTicker(durationPerExpiredImageDeletion)
+	defer ticker.Stop()
+
+	fmt.Printf("Starting periodic deletion task. Expired images will be found and deleted once every %s.\n",
+		durationPerExpiredImageDeletion)
+
+	for {
+		t := <-ticker.C
+		fmt.Printf("Periodic tick triggered at %s for deletion of expired images.\n", t.Format("2006-01-02 15:04:05"))
+
+		result, err := app.DB.Exec("DELETE FROM images WHERE expires_at < ?", t.Unix())
+		if err != nil {
+			fmt.Printf("Failed to run deletion of expired images: %s\n", err.Error())
+			continue
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			fmt.Printf("Error while printing number of rows affected in deletion of expired images: %s\n", err.Error())
+		}
+
+		if rowsAffected != 0 {
+			fmt.Printf("Successfully deleted %d expired images from the database.\n", rowsAffected)
+		}
+	}
 }
 
 func (app App) handleGetHome(w http.ResponseWriter, r *http.Request) {
@@ -144,7 +175,7 @@ func (app App) initDb() {
 	if err != nil {
 		log.Fatal("Failed to read database migration file.", err)
 	}
-	
+
 	_, err = app.DB.Exec(string(content))
 	if err != nil {
 		log.Fatal("Failed to execute database migration.", err)

@@ -146,6 +146,14 @@ func (app App) handlePostImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sniffedMimeType := http.DetectContentType(blob)
+	if !strings.HasPrefix(sniffedMimeType, "image/") {
+		w.Header().Add("Accept-Post", "image/*")
+		http.Error(w, "The uploaded file was not an image file. You can only upload image files.",
+			http.StatusUnsupportedMediaType)
+		return
+	}
+
 	now := time.Now()
 	expiry := now.Add(time.Hour * 24 * 7)
 

@@ -14,6 +14,7 @@ import (
 )
 
 const port = "5465"
+const dbConnectionString = "graffiti.sqlite3"
 const maxMemoryBytesForParsingImage int64 = 1 << 20
 const maxUploadRequestSize int64 = 1 << 20
 
@@ -22,7 +23,7 @@ type App struct {
 }
 
 func main() {
-	db, err := sql.Open("sqlite3", "graffiti.sqlite3")
+	db, err := sql.Open("sqlite3", dbConnectionString)
 	if err != nil {
 		log.Fatal("failed to connect to database")
 	}
@@ -30,6 +31,8 @@ func main() {
 	defer db.Close()
 
 	app := App{DB: db}
+
+	app.initDb()
 
 	http.HandleFunc("GET /{$}", app.handleGetHome)
 	http.HandleFunc("GET /image/{id}", app.handleGetImage)
@@ -134,4 +137,18 @@ func (app App) handlePostImage(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "The image was uploaded at %v and can be viewed at /image/%v. It will expire at %v.",
 		now, id, expiry)
+}
+
+func (app App) initDb() {
+	content, err := os.ReadFile("migrations/001_init.sql")
+	if err != nil {
+		log.Fatal("Failed to read database migration file.", err)
+	}
+	
+	_, err = app.DB.Exec(string(content))
+	if err != nil {
+		log.Fatal("Failed to execute database migration.", err)
+	}
+
+	fmt.Println("initialised database successfully")
 }

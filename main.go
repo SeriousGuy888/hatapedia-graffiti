@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -74,13 +75,14 @@ func (app App) periodicallyRemoveExpiredFiles() {
 }
 
 func (app App) handleGetHome(w http.ResponseWriter, r *http.Request) {
-	bytes, err := os.ReadFile("home.html")
+	t, err := template.ParseFiles("home.html")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
 	}
-	w.Write(bytes)
+
+	t.Execute(w, struct { MAX_UPLOAD_SIZE_BYTES int }{ int(maxUploadRequestSize) })
 }
 
 func (app App) handleGetImage(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +125,7 @@ func (app App) handlePostImage(w http.ResponseWriter, r *http.Request) {
 		if maxBytesErr, ok := err.(*http.MaxBytesError); ok {
 			http.Error(
 				w,
-				fmt.Sprintf("Uploaded files must be no more than %d bytes in filesize.", maxBytesErr.Limit),
+				fmt.Sprintf("Request body exceeded maximum allowed length of %d bytes.", maxBytesErr.Limit),
 				http.StatusRequestEntityTooLarge)
 			return
 		}

@@ -75,7 +75,7 @@ func (app App) periodicallyRemoveExpiredFiles() {
 }
 
 func (app App) handleGetHome(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("home.html")
+	t, err := template.ParseFiles("web/home.html")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))

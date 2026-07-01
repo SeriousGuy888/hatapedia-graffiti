@@ -42,6 +42,9 @@ func main() {
 	http.HandleFunc("GET /image/{id}", app.handleGetImage)
 	http.HandleFunc("POST /image/create", app.handlePostImage)
 
+	fileServer := http.FileServer(http.Dir("./web/static"))
+	http.Handle("/static/", http.StripPrefix("/static", fileServer))
+
 	fmt.Printf("listening for http requests on http://localhost:%s\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

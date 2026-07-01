@@ -9,66 +9,22 @@
     <script>
         const MAX_UPLOAD_SIZE_BYTES = Number("{{ .MAX_UPLOAD_SIZE_BYTES }}") || 1 << 20
     </script>
+    <script defer src="/static/image_upload.js"></script>
 </head>
 
 <body>
     <h1>upload an image</h1>
 
-    <form action="/image/create" method="post" enctype="multipart/form-data">
+    <form action="/image/create" method="post" enctype="multipart/form-data" id="image-upload-form">
         <fieldset>
             <legend>Select an image file to upload:</legend>
-            <label for="file-input" style="position: absolute; left: -9999px">Select an image file to upload:</label>
-            <input type="file" name="uploaded-image" id="file-input" accept="image/*">
+            <label for="image-upload-file-input" style="position: absolute; left: -9999px">
+                Select an image file to upload:
+            </label>
+            <input type="file" name="uploaded-image" id="image-upload-file-input" accept="image/*">
         </fieldset>
-        <button type="button">Upload</button>
+        <button type="button" id="image-upload-button">Upload</button>
     </form>
-
-    <script>
-        const form = document.querySelector("form")
-        const button = document.querySelector("button")
-        const fileInput = document.querySelector("#file-input")
-
-        button.addEventListener("mouseup", (event) => {
-            if (!fileInput.files.length) {
-                alert("Please select a file to upload")
-                return
-            }
-
-            const file = fileInput.files[0]
-            if (!(file instanceof Blob)) {
-                alert("Selected file isn't a blob?")
-                return
-            }
-
-            if (file.size > MAX_UPLOAD_SIZE_BYTES) {
-                alert("You cannot upload a file larger than " + MAX_UPLOAD_SIZE_BYTES + " bytes in size.")
-                return
-            }
-
-            const formData = new FormData()
-            formData.append(fileInput.getAttribute("name"), file)
-
-            console.log(file)
-
-            const request = new Request(form.action, {
-                method: form.method,
-                body: formData
-            })
-
-            fetch(request)
-                .then(async response => {
-                    if (!response.ok) {
-                        alert("" + response.status + ": " + await response.text())
-                        return
-                    }
-                    alert("Uploaded successfully: " + await response.text())
-                })
-                .catch(reason => {
-                    alert("Failed to send request: " + reason)
-                    console.error(reason)
-                })
-        })
-    </script>
 </body>
 
 </html>

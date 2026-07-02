@@ -6,6 +6,7 @@ import {
 	MapShade,
 	pixelDataToRgba,
 } from "./colours.js"
+import { getSelectedTool, setSelectedTool, Tool } from "./tools.js"
 
 const canvasWidth = 128
 const canvasHeight = 128
@@ -100,14 +101,18 @@ function selectColour(mapColour, mapShade) {
 
 	selectedMapColour = mapColour
 	selectedMapShade = mapShade
+
+	if (getSelectedTool() == Tool.ERASER) {
+		setSelectedTool(Tool.BRUSH)
+	}
 }
 
 function initEvents() {
 	colourPickerButton.addEventListener("click", (event) => {
 		colourPickerDialog.showModal()
 	})
-    colourPickerDialog.addEventListener("click", (event) => {
-        // close dialog if backdrop clicked
+	colourPickerDialog.addEventListener("click", (event) => {
+		// close dialog if backdrop clicked
 		const rect = colourPickerDialog.getBoundingClientRect()
 		const isInDialog =
 			rect.top <= event.clientY &&
@@ -176,7 +181,12 @@ function initCanvas() {
 		const x = Math.floor((event.clientX - boundingRect.left) * scaleX)
 		const y = Math.floor((event.clientY - boundingRect.top) * scaleY)
 
-		drawCircle(x, y, 4, selectedMapColour, selectedMapShade)
+		const selectedTool = getSelectedTool()
+		if (selectedTool == Tool.BRUSH) {
+			drawCircle(x, y, 4, selectedMapColour, selectedMapShade)
+		} else if (selectedTool == Tool.ERASER) {
+			drawCircle(x, y, 4, MapColour.NONE, MapShade.BASE)
+		}
 	})
 
 	requestAnimationFrame(draw)

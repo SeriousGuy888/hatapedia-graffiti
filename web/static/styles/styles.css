@@ -24,8 +24,12 @@
 		border: none;
 		cursor: pointer;
 
-		&:hover {
+		&:not([active]):hover {
 			filter: brightness(150%);
+		}
+
+		&[active] {
+			background-color: aquamarine;
 		}
 	}
 

@@ -1,4 +1,4 @@
-import { MapColour, MapColourRGBA } from "./colours.js"
+import { colourAndShadeToPixelData, MapColour, MapShade, pixelDataToRgba } from "./colours.js"
 
 const canvasWidth = 128
 const canvasHeight = 128
@@ -9,7 +9,9 @@ const ctx = canvas.getContext("2d")
 
 /**
  * An array of the pixels stored in row major order.
- * Each pixel is one uint8, an index into the colour table.
+ * Each pixel is one uint8,
+ * whose upper six bits are an index into the colour table, and
+ * whose lower two bits are an index into the shade table.
  */
 const pixelData = new Uint8Array(canvasWidth * canvasHeight)
 
@@ -21,21 +23,18 @@ const imageData = new ImageData(canvasWidth, canvasHeight)
 
 /** Sets all pixels to be transparent. */
 function clearCanvas() {
-	pixelData.fill(MapColour.NONE)
+	pixelData.fill(0)
 	imageData.data.fill(0)
 }
 
 /**
  * @param x {number}
  * @param y {number}
- * @param mapColour {number} An index into the map colour palette.
+ * @param pixel {number} A uint8 that represents the pixel colour & shade.
  */
-function setPixel(x, y, mapColour) {
-	pixelData[128 * y + x] = MapColour.WATER
-	imageData.data.set(
-		MapColourRGBA[MapColour.WATER],
-		canvasWidth * (y * 4) + x * 4,
-	)
+function setPixel(x, y, pixel) {
+	pixelData[128 * y + x] = pixel
+	imageData.data.set(pixelDataToRgba(pixel), canvasWidth * (y * 4) + x * 4)
 }
 
 /**
@@ -43,9 +42,13 @@ function setPixel(x, y, mapColour) {
  * @param yCenter {number}
  * @param radius {number}
  * @param mapColour {number} An index into the map colour palette.
+ * @param mapShade {number} An index into the map shade palette.
  */
-function drawCircle(xCenter, yCenter, radius, mapColour) {
-	if (radius < 0) return
+function drawCircle(xCenter, yCenter, radius, mapColour, mapShade) {
+    if (radius < 0) return
+    
+    const pixel = colourAndShadeToPixelData(mapColour, mapShade)
+    console.log(pixel)
 
 	// loop through all pixels in a (2r+1)×(2r+1) square around (xCenter,yCenter)
 	// test if that pixel is _strictly_ within a radius of r of the center
@@ -62,7 +65,7 @@ function drawCircle(xCenter, yCenter, radius, mapColour) {
 				const x = xCenter + dx
 				const y = yCenter + dy
 				if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
-					setPixel(x, y, mapColour)
+					setPixel(x, y, pixel)
 				}
 			}
 		}
@@ -93,7 +96,7 @@ function initCanvas() {
 		const x = Math.floor((event.clientX - boundingRect.left) * scaleX)
 		const y = Math.floor((event.clientY - boundingRect.top) * scaleY)
 
-		drawCircle(x, y, 4, MapColour.WATER)
+		drawCircle(x, y, 4, MapColour.WATER, MapShade.DARKENED_TWICE)
 	})
 
 	requestAnimationFrame(draw)

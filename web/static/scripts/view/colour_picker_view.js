@@ -36,6 +36,16 @@ function selectPaletteIndex(paletteIndex) {
 	selectedColourElem.style.background = cssRgba
 	colourPickerButton.style.background = cssRgba
 
+	// mark the selected swatch as active
+	colourPickerDialog
+		.querySelector(".colour-picker-swatch[active]")
+		?.removeAttribute("active")
+	colourPickerDialog
+		.querySelector(
+			`.colour-picker-swatch[graffiti-palette-index="${paletteIndex}"]`,
+		)
+		.setAttribute("active", "true")
+
 	if (getSelectedTool() == Tool.ERASER) {
 		setSelectedTool(Tool.BRUSH)
 	}
@@ -97,10 +107,9 @@ function initColourPicker() {
 			colourPickerDialog.close()
 		}
 	})
-
-	selectPaletteIndex(
-		baseColourAndShadeToPaletteIndex(MapBaseColour.WATER, MapShade.BASE),
-	)
 }
 
 initColourPicker()
+selectPaletteIndex(
+	baseColourAndShadeToPaletteIndex(MapBaseColour.WATER, MapShade.BASE),
+)

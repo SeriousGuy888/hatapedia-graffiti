@@ -10,10 +10,11 @@
         const MAX_UPLOAD_SIZE_BYTES = Number("{{ .MAX_UPLOAD_SIZE_BYTES }}") || 1 << 20
     </script>
     <script defer src="/static/image_upload.js"></script>
-
-    <script type="module" src="/static/colours.js"></script>
-    <script type="module" src="/static/tools.js" defer></script>
-    <script type="module" src="/static/graffiti_canvas.js" defer></script>
+    
+    <script type="module" src="/static/scripts/view/canvas_controls_view.js" defer></script>
+    <script type="module" src="/static/scripts/view/canvas_view.js" defer></script>
+    <script type="module" src="/static/scripts/view/colour_picker_view.js" defer></script>
+    <script type="module" src="/static/scripts/view/tool_selection_view.js" defer></script>
 
     <link rel="stylesheet" href="/static/styles/styles.css">
 </head>

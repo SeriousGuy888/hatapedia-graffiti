@@ -16,15 +16,88 @@
 #graffiti-canvas-controls {
 	display: flex;
 	flex-direction: column;
+
+	.canvas-control-button {
+		aspect-ratio: 1 / 1;
+        outline: none;
+		background: none;
+		border: none;
+		cursor: pointer;
+
+		&:hover {
+			filter: brightness(150%);
+		}
+	}
+
+    #colour-picker-button {
+        border-radius: 9999px;
+        border: 2px solid black;
+    }
 }
 
-.canvas-control-button {
-	aspect-ratio: square;
-	background: none;
-	border: none;
-	cursor: pointer;
+#colour-picker-dialog {
+	box-sizing: border-box;
 
-	&:hover {
-		filter: brightness(150%);
+	position: fixed;
+	top: 0;
+	bottom: 0;
+
+	background-color: wheat;
+	border: 2px solid black;
+	border-radius: 1rem;
+
+	&::backdrop {
+		background-image: radial-gradient(
+			circle,
+			rgba(0, 0, 0, 0.1) 0%,
+			rgba(0, 0, 0, 0.3) 90%,
+			rgba(0, 0, 0, 0.5) 100%
+		);
+		opacity: 1;
+	}
+
+	& #colour-picker-dialog-header {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		column-gap: 2rem;
+		margin-bottom: 2rem;
+
+		& #colour-picker-dialog-selected-colour {
+			aspect-ratio: 1 / 1;
+			border-radius: 9999px;
+			border: 2px solid black;
+			display: grid;
+			place-items: center;
+
+			& span {
+				color: black;
+				background-color: white;
+				padding: 0.25em 0.5em;
+				border-radius: 9999px;
+			}
+		}
+	}
+
+	& #colour-picker-swatch-box {
+		display: grid;
+		grid-template-columns: repeat(16, 1fr);
+		row-gap: 1rem;
+		column-gap: 0.5rem;
+
+		& .colour-picker-swatch-column {
+			display: flex;
+			flex-direction: column;
+			gap: 0.25rem;
+
+			& .colour-picker-swatch {
+				aspect-ratio: 1 / 1;
+				min-width: 1.5rem;
+
+				border-radius: 9999px;
+				border: 0;
+
+				cursor: pointer;
+			}
+		}
 	}
 }

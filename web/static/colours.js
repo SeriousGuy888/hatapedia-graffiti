@@ -22,6 +22,15 @@ export function pixelDataToRgba(pixel) {
 	return rgbaLut[mapShade][mapColour]
 }
 
+export function colourAndShadeToRgba(mapColour, mapShade) {
+	return pixelDataToRgba(colourAndShadeToPixelData(mapColour, mapShade))
+}
+
+export function colourAndShadeToRgbaCssString(mapColour, mapShade) {
+	const [r, g, b, a] = colourAndShadeToRgba(mapColour, mapShade)
+	return `rgba(${r}, ${g}, ${b}, ${a})`
+}
+
 export const MapShade = {
 	DARKENED_TWICE: 0,
 	DARKENED_ONCE: 1,
@@ -94,6 +103,15 @@ export const MapColour = {
 	GLOW_LICHEN: 61,
 	// 62 & 63 unassigned
 }
+
+// from https://minecraft.wiki/w/File:Map_colors_oklab_organized.png
+// excludes transparent
+export const MAP_COLOUR_OKLAB_SEQUENCE = [
+	29, 51, 43, 48, 35, 54, 57, 47, 21, 49, 26, 34, 37, 10, 44, 11, 39, 59, 45,
+	46, 53, 38, 42, 50, 28, 52, 4, 15, 40, 13, 41, 27, 7, 55, 23, 56, 61, 22, 6,
+	9, 5, 17, 32, 12, 25, 24, 16, 20, 60, 36, 3, 31, 58, 1, 19, 33, 18, 30, 2, 14,
+	8,
+]
 
 /**
  * Lookup table for the RGBA values of each shade of each map colour ID.

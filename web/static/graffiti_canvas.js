@@ -1,4 +1,11 @@
-import { colourAndShadeToPixelData, MapColour, MapShade, pixelDataToRgba } from "./colours.js"
+import {
+	colourAndShadeToPixelData,
+	colourAndShadeToRgbaCssString,
+	MAP_COLOUR_OKLAB_SEQUENCE,
+	MapColour,
+	MapShade,
+	pixelDataToRgba,
+} from "./colours.js"
 
 const canvasWidth = 128
 const canvasHeight = 128
@@ -20,6 +27,19 @@ const pixelData = new Uint8Array(canvasWidth * canvasHeight)
  * It should be kept in sync with `pixelData`.
  */
 const imageData = new ImageData(canvasWidth, canvasHeight)
+
+/** @type HTTPDialogElement */
+const colourPickerDialog = document.getElementById("colour-picker-dialog")
+
+/** @type HTTPButtonElement */
+const colourPickerButton = document.getElementById("colour-picker-button")
+
+/** @type HTTPDivElement */
+const selectedColourElem = document.getElementById(
+	"colour-picker-dialog-selected-colour",
+)
+let selectedMapColour = MapColour.WATER
+let selectedMapShade = MapShade.BASE
 
 /** Sets all pixels to be transparent. */
 function clearCanvas() {
@@ -45,10 +65,10 @@ function setPixel(x, y, pixel) {
  * @param mapShade {number} An index into the map shade palette.
  */
 function drawCircle(xCenter, yCenter, radius, mapColour, mapShade) {
-    if (radius < 0) return
-    
-    const pixel = colourAndShadeToPixelData(mapColour, mapShade)
-    console.log(pixel)
+	if (radius < 0) return
+
+	const pixel = colourAndShadeToPixelData(mapColour, mapShade)
+	console.log(pixel)
 
 	// loop through all pixels in a (2r+1)×(2r+1) square around (xCenter,yCenter)
 	// test if that pixel is _strictly_ within a radius of r of the center
@@ -72,10 +92,70 @@ function drawCircle(xCenter, yCenter, radius, mapColour, mapShade) {
 	}
 }
 
+function selectColour(mapColour, mapShade) {
+	const cssRgba = colourAndShadeToRgbaCssString(mapColour, mapShade)
+
+	selectedColourElem.style.background = cssRgba
+	colourPickerButton.style.background = cssRgba
+
+	selectedMapColour = mapColour
+	selectedMapShade = mapShade
+}
+
 function initEvents() {
+	colourPickerButton.addEventListener("click", (event) => {
+		colourPickerDialog.showModal()
+	})
+    colourPickerDialog.addEventListener("click", (event) => {
+        // close dialog if backdrop clicked
+		const rect = colourPickerDialog.getBoundingClientRect()
+		const isInDialog =
+			rect.top <= event.clientY &&
+			event.clientY <= rect.top + rect.height &&
+			rect.left <= event.clientX &&
+			event.clientX <= rect.left + rect.width
+		if (!isInDialog) {
+			colourPickerDialog.close()
+		}
+	})
+
 	document
 		.getElementById("clear-canvas-button")
-		.addEventListener("mouseup", clearCanvas)
+		.addEventListener("click", clearCanvas)
+}
+
+function initColourPicker() {
+	const container = document.getElementById("colour-picker-swatch-box")
+
+	/** @type HTMLTemplateElement */
+	const template = document.getElementById(
+		"colour-picker-swatch-column-template",
+	)
+
+	for (const colourId of MAP_COLOUR_OKLAB_SEQUENCE) {
+		const clone = document.importNode(template.content, true)
+		const shadeSwatches = clone.querySelectorAll(".colour-picker-swatch")
+
+		shadeSwatches[0].setAttribute("graffiti-shade-id", MapShade.DARKENED_THRICE)
+		shadeSwatches[1].setAttribute("graffiti-shade-id", MapShade.DARKENED_TWICE)
+		shadeSwatches[2].setAttribute("graffiti-shade-id", MapShade.DARKENED_ONCE)
+		shadeSwatches[3].setAttribute("graffiti-shade-id", MapShade.BASE)
+		shadeSwatches.forEach((/** @type HTMLButtonElement */ e) => {
+			e.setAttribute("graffiti-colour-id", colourId)
+
+			const shadeId = Number(e.getAttribute("graffiti-shade-id"))
+			e.style.backgroundColor = colourAndShadeToRgbaCssString(colourId, shadeId)
+
+			e.addEventListener("click", (event) => {
+				selectColour(colourId, shadeId)
+				colourPickerDialog.close()
+			})
+		})
+
+		container.appendChild(clone)
+	}
+
+	selectColour(MapColour.WATER, MapColour.BASE)
 }
 
 function initCanvas() {
@@ -96,7 +176,7 @@ function initCanvas() {
 		const x = Math.floor((event.clientX - boundingRect.left) * scaleX)
 		const y = Math.floor((event.clientY - boundingRect.top) * scaleY)
 
-		drawCircle(x, y, 4, MapColour.WATER, MapShade.DARKENED_TWICE)
+		drawCircle(x, y, 4, selectedMapColour, selectedMapShade)
 	})
 
 	requestAnimationFrame(draw)
@@ -108,4 +188,5 @@ function draw() {
 }
 
 initEvents()
+initColourPicker()
 initCanvas()

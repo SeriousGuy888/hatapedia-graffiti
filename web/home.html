@@ -40,17 +40,37 @@
             canvas that you can draw your graffiti on
         </canvas>
         <div id="graffiti-canvas-controls">
-            <button>red</button>
-            <button>green</button>
-            <button>blue</button>
-            
+            <button id="colour-picker-button" class="canvas-control-button" title="Open the colour picker."></button>
+
             <div style="flex-grow: 1;"></div>
 
             <button id="clear-canvas-button" class="canvas-control-button" title="Clear the canvas.">
                 <img src="/static/images/icons/clear_canvas.png" alt="">
             </button>
         </div>
+        <dialog id="colour-picker-dialog">
+            <div id="colour-picker-dialog-header">
+                <div>
+                    <h3>Select Colour</h3>
+                    <p>These are the colours that can appear in a Minecraft map in game.</p>
+                </div>
+                <div id="colour-picker-dialog-selected-colour">
+                    <span>Selected</span>
+                </div>
+            </div>
+            <div id="colour-picker-swatch-box">
+            </div>
+        </dialog>
     </section>
+
+    <template id="colour-picker-swatch-column-template">
+        <div class="colour-picker-swatch-column">
+            <button class="colour-picker-swatch"></button>
+            <button class="colour-picker-swatch"></button>
+            <button class="colour-picker-swatch"></button>
+            <button class="colour-picker-swatch"></button>
+        </div>
+    </template>
 </body>
 
 </html>

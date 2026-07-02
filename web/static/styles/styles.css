@@ -3,19 +3,36 @@
 	gap: 1rem;
 	width: 100%;
 	height: 80svh;
+
+	#canvas-container {
+		position: relative;
+
+		& > canvas {
+			height: 100%;
+			image-rendering: pixelated;
+			border: 2px solid black;
+		}
+
+		#graffiti-canvas {
+			background-image: url("/static/images/textures/transparent_background.png");
+			background-size: 6.25%;
+		}
+
+		#overlay-canvas {
+			position: absolute;
+			left: 0;
+			top: 0;
+
+			pointer-events: none;
+		}
+	}
 }
 
-#graffiti-canvas {
-	height: 100%;
-	image-rendering: pixelated;
-	border: 2px solid black;
-	background-image: url("/static/images/textures/transparent_background.png");
-	background-size: 6.25%;
-}
 
 #graffiti-canvas-controls {
 	display: flex;
 	flex-direction: column;
+	user-select: none;
 
 	.canvas-control-button {
 		aspect-ratio: 1 / 1;

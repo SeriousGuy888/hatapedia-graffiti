@@ -11,9 +11,25 @@ import { getSelectedTool, setSelectedTool, Tool } from "./tools.js"
 const canvasWidth = 128
 const canvasHeight = 128
 
+/** An integer. The x coordinate of the pixel of the canvas that the user's mouse is currently hovering over. -1 if not over canvas. */
+let mouseX = -1
+
+/** An integer. The y coordinate of the pixel of the canvas that the user's mouse is currently hovering over. -1 if not over canvas. */
+let mouseY = -1
+
+/**
+ * A bitmask representing which mouse buttons the user is currently holding down.
+ * This bitmask: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+ */
+let mouseButtons = 0
+
 /** @type HTMLCanvasElement */
 const canvas = document.getElementById("graffiti-canvas")
 const ctx = canvas.getContext("2d")
+
+/** @type HTMLCanvasElement */
+const overlayCanvas = document.getElementById("overlay-canvas")
+const overlayCtx = overlayCanvas.getContext("2d")
 
 /**
  * An array of the pixels stored in row major order.
@@ -164,37 +180,69 @@ function initColourPicker() {
 }
 
 function initCanvas() {
-	if (!ctx) {
+	if (!ctx || !overlayCtx) {
 		console.error("Cannot get 2d context for canvas.")
 		return
 	}
 
+	canvas.addEventListener("mouseleave", () => {
+		mouseX = -1
+		mouseY = -1
+	})
+
 	canvas.addEventListener("mousemove", (event) => {
-		if (!(event.buttons & 1)) {
+		const boundingRect = canvas.getBoundingClientRect()
+		const scaleX = canvas.width / boundingRect.width
+		const scaleY = canvas.height / boundingRect.height
+		mouseX = Math.floor((event.clientX - boundingRect.left) * scaleX)
+        mouseY = Math.floor((event.clientY - boundingRect.top) * scaleY)
+        mouseButtons = event.buttons
+
+		if (!(mouseButtons & 1)) {
 			// if not leftclicking
 			return
 		}
 
-		const boundingRect = canvas.getBoundingClientRect()
-		const scaleX = canvas.width / boundingRect.width
-		const scaleY = canvas.height / boundingRect.height
-		const x = Math.floor((event.clientX - boundingRect.left) * scaleX)
-		const y = Math.floor((event.clientY - boundingRect.top) * scaleY)
-
-		const selectedTool = getSelectedTool()
-		if (selectedTool == Tool.BRUSH) {
-			drawCircle(x, y, 4, selectedMapColour, selectedMapShade)
-		} else if (selectedTool == Tool.ERASER) {
-			drawCircle(x, y, 4, MapColour.NONE, MapShade.BASE)
-		}
+		useToolAt(mouseX, mouseY)
 	})
 
-	requestAnimationFrame(draw)
+	canvas.addEventListener("mousedown", () => {
+		useToolAt(mouseX, mouseY)
+	})
+
+	requestAnimationFrame(repaint)
 }
 
-function draw() {
-	ctx.putImageData(imageData, 0, 0)
-	requestAnimationFrame(draw)
+function useToolAt(x, y) {
+	const selectedTool = getSelectedTool()
+	if (selectedTool == Tool.BRUSH) {
+		drawCircle(x, y, 4, selectedMapColour, selectedMapShade)
+	} else if (selectedTool == Tool.ERASER) {
+		drawCircle(x, y, 4, MapColour.NONE, MapShade.BASE)
+	}
+}
+
+function paintOverlays() {
+    overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight)
+
+    if (mouseX === -1 || mouseY === -1) {
+        return
+    }
+    
+    if ((mouseButtons & 1) && getSelectedTool() == Tool.BRUSH) {
+        return
+    }
+
+	overlayCtx.fillStyle = "black"
+	overlayCtx.beginPath()
+	overlayCtx.ellipse(mouseX, mouseY, 4, 4, 0, 0, Math.PI * 2)
+	overlayCtx.fill()
+}
+
+function repaint() {
+    ctx.putImageData(imageData, 0, 0)
+    paintOverlays()
+	requestAnimationFrame(repaint)
 }
 
 initEvents()

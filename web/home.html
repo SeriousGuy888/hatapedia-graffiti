@@ -37,13 +37,18 @@
     <h2>do some art</h2>
 
     <section id="art-panel">
-        <canvas id="graffiti-canvas" width="128" height="128">
-            canvas that you can draw your graffiti on
-        </canvas>
+        <div id="canvas-container">
+            <canvas id="graffiti-canvas" width="128" height="128">
+                canvas that you can draw your graffiti on
+            </canvas>
+            <canvas id="overlay-canvas" width="128" height="128" tabindex="-1" aria-hidden="true">
+            </canvas>
+        </div>
         <div id="graffiti-canvas-controls">
             <button id="colour-picker-button" class="canvas-control-button" title="Open the colour picker."></button>
             <button id="brush-tool-button" class="canvas-control-button" title="Select the brush tool">brush</button>
-            <button id="eraser-tool-button" class="canvas-control-button" title="Select the eraser tool.">eraser</button>
+            <button id="eraser-tool-button" class="canvas-control-button"
+                title="Select the eraser tool.">eraser</button>
 
             <div style="flex-grow: 1;"></div>
 

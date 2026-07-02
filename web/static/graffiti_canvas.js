@@ -196,7 +196,6 @@ function initCanvas() {
 		const scaleY = canvas.height / boundingRect.height
 		mouseX = Math.floor((event.clientX - boundingRect.left) * scaleX)
 		mouseY = Math.floor((event.clientY - boundingRect.top) * scaleY)
-		mouseButtons = event.buttons
 
 		if (!(mouseButtons & 1)) {
 			// if not leftclicking
@@ -206,8 +205,13 @@ function initCanvas() {
 		useToolAt(mouseX, mouseY)
 	})
 
-	canvas.addEventListener("mousedown", () => {
+	canvas.addEventListener("mousedown", (event) => {
+		mouseButtons = event.buttons
 		useToolAt(mouseX, mouseY)
+	})
+
+	canvas.addEventListener("mouseup", (event) => {
+		mouseButtons = event.buttons
 	})
 
 	requestAnimationFrame(repaint)

@@ -10,10 +10,17 @@
         const MAX_UPLOAD_SIZE_BYTES = Number("{{ .MAX_UPLOAD_SIZE_BYTES }}") || 1 << 20
     </script>
     <script defer src="/static/image_upload.js"></script>
+
+    <script type="module" src="/static/colours.js"></script>
+    <script type="module" src="/static/graffiti_canvas.js" defer></script>
+
+    <link rel="stylesheet" href="/static/styles/styles.css">
 </head>
 
 <body>
-    <h1>upload an image</h1>
+    <h1>hatapedia graffiti maker</h1>
+
+    <h2>upload an image</h2>
 
     <form action="/image/create" method="post" enctype="multipart/form-data" id="image-upload-form">
         <fieldset>
@@ -25,6 +32,25 @@
         </fieldset>
         <button type="button" id="image-upload-button">Upload</button>
     </form>
+
+    <h2>do some art</h2>
+
+    <section id="art-panel">
+        <canvas id="graffiti-canvas" width="128" height="128">
+            canvas that you can draw your graffiti on
+        </canvas>
+        <div id="graffiti-canvas-controls">
+            <button>red</button>
+            <button>green</button>
+            <button>blue</button>
+            
+            <div style="flex-grow: 1;"></div>
+
+            <button id="clear-canvas-button" class="canvas-control-button" title="Clear the canvas.">
+                <img src="/static/images/icons/clear_canvas.png" alt="">
+            </button>
+        </div>
+    </section>
 </body>
 
 </html>

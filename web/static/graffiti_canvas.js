@@ -195,8 +195,8 @@ function initCanvas() {
 		const scaleX = canvas.width / boundingRect.width
 		const scaleY = canvas.height / boundingRect.height
 		mouseX = Math.floor((event.clientX - boundingRect.left) * scaleX)
-        mouseY = Math.floor((event.clientY - boundingRect.top) * scaleY)
-        mouseButtons = event.buttons
+		mouseY = Math.floor((event.clientY - boundingRect.top) * scaleY)
+		mouseButtons = event.buttons
 
 		if (!(mouseButtons & 1)) {
 			// if not leftclicking
@@ -223,15 +223,15 @@ function useToolAt(x, y) {
 }
 
 function paintOverlays() {
-    overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight)
+	overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight)
 
-    if (mouseX === -1 || mouseY === -1) {
-        return
-    }
-    
-    if ((mouseButtons & 1) && getSelectedTool() == Tool.BRUSH) {
-        return
-    }
+	if (mouseX === -1 || mouseY === -1) {
+		return
+	}
+
+	if (mouseButtons & 1 && getSelectedTool() == Tool.BRUSH) {
+		return
+	}
 
 	overlayCtx.fillStyle = "black"
 	overlayCtx.beginPath()
@@ -240,8 +240,8 @@ function paintOverlays() {
 }
 
 function repaint() {
-    ctx.putImageData(imageData, 0, 0)
-    paintOverlays()
+	ctx.putImageData(imageData, 0, 0)
+	paintOverlays()
 	requestAnimationFrame(repaint)
 }
 

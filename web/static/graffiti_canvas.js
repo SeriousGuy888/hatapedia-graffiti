@@ -17,6 +17,9 @@ let mouseX = -1
 /** An integer. The y coordinate of the pixel of the canvas that the user's mouse is currently hovering over. -1 if not over canvas. */
 let mouseY = -1
 
+let mouseXPrevious = -1
+let mouseYPrevious = -1
+
 /**
  * A bitmask representing which mouse buttons the user is currently holding down.
  * This bitmask: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
@@ -85,7 +88,6 @@ function drawCircle(xCenter, yCenter, radius, mapColour, mapShade) {
 	if (radius < 0) return
 
 	const pixel = colourAndShadeToPixelData(mapColour, mapShade)
-	console.log(pixel)
 
 	// loop through all pixels in a (2r+1)×(2r+1) square around (xCenter,yCenter)
 	// test if that pixel is _strictly_ within a radius of r of the center
@@ -198,12 +200,28 @@ function initCanvas() {
 		mouseY = Math.floor((event.clientY - boundingRect.top) * scaleY)
 		mouseButtons = event.buttons
 
-		if (!(mouseButtons & 1)) {
-			// if not leftclicking
-			return
-		}
+		const deltaMouseX = mouseX - mouseXPrevious
+		const deltaMouseY = mouseY - mouseYPrevious
+		mouseXPrevious = mouseX
+		mouseYPrevious = mouseY
 
-		useToolAt(mouseX, mouseY)
+		if (mouseButtons & 1) {
+			// if leftclicking
+
+			const deltaMouseSquaredDistance = deltaMouseX ** 2 + deltaMouseY ** 2
+			if (deltaMouseSquaredDistance > 5 * 5) {
+				const numInterpolatedUses = Math.sqrt(deltaMouseSquaredDistance)
+
+				interpolateToolUsage(
+					mouseX - deltaMouseX,
+					mouseY - deltaMouseY,
+					mouseX,
+					mouseY,
+					numInterpolatedUses,
+				)
+			}
+			useToolAt(mouseX, mouseY)
+		}
 	})
 
 	canvas.addEventListener("mousedown", (event) => {
@@ -216,6 +234,24 @@ function initCanvas() {
 	})
 
 	requestAnimationFrame(repaint)
+}
+
+function interpolateToolUsage(startX, startY, endX, endY, howManyTimes) {
+	let stepSizeX = (endX - startX) / (howManyTimes + 1)
+	let stepSizeY = (endY - startY) / (howManyTimes + 1)
+
+	if (stepSizeX === 0 && stepSizeY === 0) return
+
+	for (
+		let x = startX + stepSizeX, y = startY + stepSizeY;
+		x <= Math.max(startX, endX) &&
+		x >= Math.min(startX, endX) &&
+		y <= Math.max(startY, endY) &&
+		y >= Math.min(startY, endY);
+		x += stepSizeX, y += stepSizeY
+	) {
+		useToolAt(Math.round(x), Math.round(y))
+	}
 }
 
 function useToolAt(x, y) {

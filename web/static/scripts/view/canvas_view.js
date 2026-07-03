@@ -10,7 +10,10 @@ import {
 	getSelectedMaskPaletteIndex,
 	getSelectedPaletteIndex,
 } from "../model/colour_state.js"
-import { PALETTE_INDEX_TRANSPARENT } from "../utils/colour_utils.js"
+import {
+	PALETTE_INDEX_TRANSPARENT,
+	paletteIndexToRgbaCssString,
+} from "../utils/colour_utils.js"
 
 /**
  * Integer canvasspace x coordinate of the pixel that
@@ -165,14 +168,29 @@ function paintOverlays() {
 		return
 	}
 
-	if (mouseButtons & 1 && (getSelectedTool() === Tool.BRUSH || getSelectedTool() === Tool.MASKED_BRUSH)) {
+	if (
+		mouseButtons & 1 &&
+		(getSelectedTool() === Tool.BRUSH ||
+			getSelectedTool() === Tool.MASKED_BRUSH)
+	) {
 		return
 	}
 
-	const brushWidth = getBrushWidth()
-	overlayCtx.fillStyle = "black"
+	const brushWidth = getBrushWidth() - 0.5
+	overlayCtx.fillStyle =
+		getSelectedTool() === Tool.ERASER
+			? "black"
+			: paletteIndexToRgbaCssString(getSelectedPaletteIndex())
 	overlayCtx.beginPath()
-	overlayCtx.ellipse(mouseX, mouseY, brushWidth, brushWidth, 0, 0, Math.PI * 2)
+	overlayCtx.ellipse(
+		mouseX + 0.5,
+		mouseY + 0.5,
+		brushWidth,
+		brushWidth,
+		0,
+		0,
+		Math.PI * 2,
+	)
 	overlayCtx.fill()
 }
 

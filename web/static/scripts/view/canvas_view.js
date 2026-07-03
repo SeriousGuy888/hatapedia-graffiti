@@ -49,7 +49,7 @@ let mouseButtons = 0
  * @type HTMLCanvasElement
  * The canvas that displays pixels in the image the user is drawing.
  */
-const canvas = document.getElementById("graffiti-canvas")
+export const canvas = document.getElementById("graffiti-canvas")
 const ctx = canvas.getContext("2d")
 
 /**

@@ -62,7 +62,10 @@
 
 		& > * {
 			position: absolute;
+		}
 
+		#colour-picker-button,
+		#mask-picker-button {
 			background-image: var(--transparent-bg);
 			background-size: 50%;
 			image-rendering: pixelated;
@@ -80,6 +83,29 @@
 			right: 0;
 			bottom: 0;
 			border: 2px solid black;
+		}
+
+		#colour-swap-button {
+			box-sizing: border-box;
+			padding: 3px;
+
+			top: 0;
+			right: 0;
+			left: 60%;
+			bottom: 60%;
+
+			background-color: white;
+			border: 2px solid black;
+			border-radius: 9999px;
+
+			display: grid;
+			place-items: center;
+
+			img {
+				aspect-ratio: 1 / 1;
+				max-width: 100%;
+				max-height: 100%;
+			}
 		}
 	}
 }

@@ -40,6 +40,12 @@ const colourPickerButton = document.getElementById("colour-picker-button")
  */
 const maskPickerButton = document.getElementById("mask-picker-button")
 
+/**
+ * @type HTTPButtonElement
+ * The button that swaps the primary and mask colours.
+ */
+const colourSwapButton = document.getElementById("colour-swap-button")
+
 /** @type string.<"primary"|"mask"> */
 let currentlySelectingColourFor = "primary"
 
@@ -48,20 +54,30 @@ let currentlySelectingColourFor = "primary"
  * @param {"primary"|"mask"} whatFor Which colour selection to update
  */
 function selectPaletteIndex(paletteIndex, whatFor = "primary") {
-	const cssRgba = // empty string if the selected colour is transparent
-		paletteIndex === 0 ? "" : paletteIndexToRgbaCssString(paletteIndex)
-
 	if (whatFor === "primary") {
 		setSelectedPaletteIndex(paletteIndex)
-		colourPickerButton.style.background = cssRgba
 
 		if (getSelectedTool() == Tool.ERASER) {
 			setSelectedTool(Tool.BRUSH)
 		}
 	} else {
 		setSelectedMaskPaletteIndex(paletteIndex)
-		maskPickerButton.style.background = cssRgba
 	}
+
+	updateColourPickerButtonsWithCurrentSelectedColours()
+}
+
+/** Make sure the buttons that open the colour selector are displaying colours that are currently selected. */
+function updateColourPickerButtonsWithCurrentSelectedColours() {
+	let primary = getSelectedPaletteIndex()
+	colourPickerButton.style.background =
+		primary === PALETTE_INDEX_TRANSPARENT
+			? ""
+			: paletteIndexToRgbaCssString(primary)
+
+	let mask = getSelectedMaskPaletteIndex()
+	maskPickerButton.style.background =
+		mask === PALETTE_INDEX_TRANSPARENT ? "" : paletteIndexToRgbaCssString(mask)
 }
 
 /**
@@ -137,6 +153,13 @@ function initColourPicker() {
 	})
 	maskPickerButton.addEventListener("click", (event) => {
 		openColourPicker("mask")
+	})
+
+	colourSwapButton.addEventListener("click", () => {
+		let temp = getSelectedMaskPaletteIndex()
+		setSelectedMaskPaletteIndex(getSelectedPaletteIndex())
+		setSelectedPaletteIndex(temp)
+		updateColourPickerButtonsWithCurrentSelectedColours()
 	})
 
 	colourPickerDialog.addEventListener("click", (event) => {

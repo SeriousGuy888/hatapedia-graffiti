@@ -18,6 +18,7 @@ const port = "5465"
 const dbConnectionString = "graffiti.sqlite3"
 const maxMemoryBytesForParsingImage int64 = 1 << 20
 const maxUploadRequestSize int64 = 1 << 20
+const uploadedImageLifespan = time.Hour * 24
 const durationPerExpiredImageDeletion = 30 * time.Minute
 
 type App struct {
@@ -85,7 +86,7 @@ func (app App) handleGetHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.Execute(w, struct { MAX_UPLOAD_SIZE_BYTES int }{ int(maxUploadRequestSize) })
+	t.Execute(w, struct{ MAX_UPLOAD_SIZE_BYTES int }{int(maxUploadRequestSize)})
 }
 
 func (app App) handleGetImage(w http.ResponseWriter, r *http.Request) {
@@ -115,6 +116,17 @@ func (app App) handleGetImage(w http.ResponseWriter, r *http.Request) {
 	w.Write(blob)
 }
 
+/*
+This endpoint accepts user uploaded images from POST requests encoded as multipart/form-data.
+The server may reject requests if the client sends too much data.
+
+The form can contain the following fields:
+  - "uploaded-image": The binary data for an image file.
+    The server may reject the upload if the given file is not an image.
+  - "file-name": If this field is provided, its contents will be saved as the file name of the
+    uploaded image. If not, the file name will be taken from whatever file name
+    is in the uploaded-image blob's metadata.
+*/
 func (app App) handlePostImage(w http.ResponseWriter, r *http.Request) {
 	// limit size of incoming requests
 	// (turn the body into a limitreader that will eof when the max size is reached while reading)
@@ -138,19 +150,29 @@ func (app App) handlePostImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.MultipartForm.RemoveAll()
 
+	// Try and extract the image data from the request
 	uploadedFile, uploadedFileHeader, err := r.FormFile("uploaded-image")
 	if err != nil {
+		// "http: no such file" is the message of ErrMissingFile, which isn't exported by Go,
+		// so i have to check for a string match here
+		if err.Error() == "no such file" {
+			http.Error(w, "You must provide an image file to upload.", http.StatusBadRequest)
+			return
+		}
+
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer uploadedFile.Close()
 
+	// read the file into a blob
 	blob, err := io.ReadAll(uploadedFile)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// check if the user is uploading something that's not an image
 	sniffedMimeType := http.DetectContentType(blob)
 	if !strings.HasPrefix(sniffedMimeType, "image/") {
 		w.Header().Add("Accept-Post", "image/*")
@@ -159,13 +181,21 @@ func (app App) handlePostImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := time.Now()
-	expiry := now.Add(time.Hour * 24 * 7)
+	// decide on a file name to save this file with in the database
+	fileName := uploadedFileHeader.Filename // use the one that came with the file header
+	if fileNameFromFormData := r.FormValue("file-name"); len(fileNameFromFormData) > 0 {
+		fileName = fileNameFromFormData
+	}
 
+	// create the created_at and expires_at timestamps
+	now := time.Now()
+	expiry := now.Add(uploadedImageLifespan)
+
+	// put the image into the database
 	result, err := app.DB.Exec(
 		"INSERT INTO images (data, filename, created_at, expires_at) VALUES (?, ?, ?, ?)",
 		blob,
-		uploadedFileHeader.Filename,
+		fileName,
 		now.Unix(),
 		expiry.Unix())
 	if err != nil {
@@ -179,8 +209,8 @@ func (app App) handlePostImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "The image was uploaded at %v and can be viewed at /image/%v. It will expire at %v.",
-		now, id, expiry)
+	fmt.Fprintf(w, "The image can be viewed at /image/%v.\nIt will be deleted after %v, which is at %v.",
+		id, uploadedImageLifespan, expiry.UTC().Format("2006-01-02 15:04 MST"))
 }
 
 func (app App) initDb() {

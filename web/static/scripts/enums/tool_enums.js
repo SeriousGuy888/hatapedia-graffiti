@@ -1,7 +1,8 @@
 /**
- * @enum {number}
+ * @enum {string}
  */
 export const Tool = Object.freeze({
-	BRUSH: 0,
-	ERASER: 1,
+	ERASER: "ERASER",
+	BRUSH: "BRUSH",
+	MASKED_BRUSH: "MASKED_BRUSH",
 })

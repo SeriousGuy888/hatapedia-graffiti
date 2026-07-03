@@ -6,7 +6,8 @@ import {
 	imageData,
 } from "../model/canvas_state.js"
 import { Tool } from "../enums/tool_enums.js"
-import { getSelectedPaletteIndex } from "../model/colour_state.js"
+import { getSelectedMaskPaletteIndex, getSelectedPaletteIndex } from "../model/colour_state.js"
+import { PALETTE_INDEX_TRANSPARENT } from "../utils/colour_utils.js"
 
 /**
  * Integer canvasspace x coordinate of the pixel that
@@ -110,10 +111,28 @@ function initCanvas() {
 
 function useToolAt(x, y) {
 	const selectedTool = getSelectedTool()
-	if (selectedTool == Tool.BRUSH) {
-		drawCircle(x, y, 4, getSelectedPaletteIndex())
-	} else if (selectedTool == Tool.ERASER) {
-		drawCircle(x, y, 4, 0)
+	switch (selectedTool) {
+		case Tool.ERASER:
+			drawCircle(x, y, 4, PALETTE_INDEX_TRANSPARENT)
+			break
+		case Tool.BRUSH:
+			drawCircle(x, y, 4, getSelectedPaletteIndex())
+			break
+		case Tool.MASKED_BRUSH:
+			drawCircle(
+				x,
+				y,
+				4,
+				getSelectedPaletteIndex(),
+				getSelectedMaskPaletteIndex(),
+			)
+			break
+		default:
+			console.error(
+				"Using tool",
+				selectedTool,
+				"with unassigned functionality.",
+			)
 	}
 }
 

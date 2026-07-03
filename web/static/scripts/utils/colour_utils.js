@@ -132,6 +132,12 @@ export const MAP_COLOUR_OKLAB_SEQUENCE = [
 ]
 
 /**
+ * The standard palette index to use for transparent.
+ * (there are four palette indexes that would correspond to rgba(0,0,0,0), but we always use this one)
+ */
+export const PALETTE_INDEX_TRANSPARENT = 0
+
+/**
  * Given an 8 bit palette index,
  * return the corresponding RGBA value.
  * @param {number} paletteIndex must be between 0 and 255

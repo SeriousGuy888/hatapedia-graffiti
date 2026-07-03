@@ -1,10 +1,16 @@
 import { MapBaseColour, MapShade } from "../enums/colour_enums.js"
 import { Tool } from "../enums/tool_enums.js"
-import { setSelectedPaletteIndex } from "../model/colour_state.js"
+import {
+	getSelectedMaskPaletteIndex,
+	getSelectedPaletteIndex,
+	setSelectedMaskPaletteIndex,
+	setSelectedPaletteIndex,
+} from "../model/colour_state.js"
 import { getSelectedTool, setSelectedTool } from "../model/tool_state.js"
 import {
 	baseColourAndShadeToPaletteIndex,
 	MAP_COLOUR_OKLAB_SEQUENCE,
+	PALETTE_INDEX_TRANSPARENT,
 	paletteIndexToRgbaCssString,
 } from "../utils/colour_utils.js"
 
@@ -15,40 +21,70 @@ import {
 const colourPickerDialog = document.getElementById("colour-picker-dialog")
 
 /**
- * @type HTTPDivElement
- * The preview inside the colour picker dialog that displays the user's
- * currently selected colour.
+ * @type HTTPButtonElement
+ * The special swatch that allows the user to change their colour to transparent.
  */
-const selectedColourElem = document.getElementById(
-	"colour-picker-dialog-selected-colour",
+const transparentSwatch = document.getElementById(
+	"colour-picker-transparent-swatch",
 )
 
 /**
  * @type HTTPButtonElement
- * The button that opens the colour picker.
+ * The button that opens the colour picker to set the primary colour.
  */
 const colourPickerButton = document.getElementById("colour-picker-button")
 
-function selectPaletteIndex(paletteIndex) {
-	setSelectedPaletteIndex(paletteIndex)
+/**
+ * @type HTTPButtonElement
+ * The button that opens the colour picker to set the mask colour.
+ */
+const maskPickerButton = document.getElementById("mask-picker-button")
 
-	const cssRgba = paletteIndexToRgbaCssString(paletteIndex)
-	selectedColourElem.style.background = cssRgba
-	colourPickerButton.style.background = cssRgba
+/** @type string.<"primary"|"mask"> */
+let currentlySelectingColourFor = "primary"
 
-	// mark the selected swatch as active
+/**
+ * @param {number} paletteIndex A number that represents a colour
+ * @param {"primary"|"mask"} whatFor Which colour selection to update
+ */
+function selectPaletteIndex(paletteIndex, whatFor = "primary") {
+	const cssRgba = // empty string if the selected colour is transparent
+		paletteIndex === 0 ? "" : paletteIndexToRgbaCssString(paletteIndex)
+
+	if (whatFor === "primary") {
+		setSelectedPaletteIndex(paletteIndex)
+		colourPickerButton.style.background = cssRgba
+
+		if (getSelectedTool() == Tool.ERASER) {
+			setSelectedTool(Tool.BRUSH)
+		}
+	} else {
+		setSelectedMaskPaletteIndex(paletteIndex)
+		maskPickerButton.style.background = cssRgba
+	}
+}
+
+/**
+ * @param {"primary"|"mask"} whatFor Which colour selection to update
+ */
+function openColourPicker(whatFor = "primary") {
+	currentlySelectingColourFor = whatFor
+	colourPickerDialog.showModal()
+
+	const currPaletteIndex =
+		whatFor === "primary"
+			? getSelectedPaletteIndex()
+			: getSelectedMaskPaletteIndex()
+
+	// mark the appropriate swatch as active
 	colourPickerDialog
 		.querySelector(".colour-picker-swatch[active]")
 		?.removeAttribute("active")
 	colourPickerDialog
 		.querySelector(
-			`.colour-picker-swatch[graffiti-palette-index="${paletteIndex}"]`,
+			`.colour-picker-swatch[graffiti-palette-index="${currPaletteIndex}"]`,
 		)
 		.setAttribute("active", "true")
-
-	if (getSelectedTool() == Tool.ERASER) {
-		setSelectedTool(Tool.BRUSH)
-	}
 }
 
 function initColourPicker() {
@@ -84,17 +120,25 @@ function initColourPicker() {
 			e.style.backgroundColor = paletteIndexToRgbaCssString(paletteIndex)
 
 			e.addEventListener("click", (event) => {
-				selectPaletteIndex(paletteIndex)
+				selectPaletteIndex(paletteIndex, currentlySelectingColourFor)
 				colourPickerDialog.close()
 			})
 		})
 
 		container.appendChild(clone)
 	}
+	transparentSwatch.addEventListener("click", (event) => {
+		selectPaletteIndex(0, currentlySelectingColourFor)
+		colourPickerDialog.close()
+	})
 
 	colourPickerButton.addEventListener("click", (event) => {
-		colourPickerDialog.showModal()
+		openColourPicker("primary")
 	})
+	maskPickerButton.addEventListener("click", (event) => {
+		openColourPicker("mask")
+	})
+
 	colourPickerDialog.addEventListener("click", (event) => {
 		// close dialog if backdrop clicked
 		const rect = colourPickerDialog.getBoundingClientRect()
@@ -112,4 +156,6 @@ function initColourPicker() {
 initColourPicker()
 selectPaletteIndex(
 	baseColourAndShadeToPaletteIndex(MapBaseColour.WATER, MapShade.BASE),
+	"primary",
 )
+selectPaletteIndex(PALETTE_INDEX_TRANSPARENT, "mask")

@@ -29,20 +29,39 @@ export function clearCanvas() {
 /**
  * @param x {number}
  * @param y {number}
+ */
+function getPixel(x, y) {
+	return canvasContents[128 * y + x]
+}
+
+/**
+ * @param x {number}
+ * @param y {number}
  * @param paletteIndex {number} A uint8 that represents the pixel colour.
  */
 function setPixel(x, y, paletteIndex) {
-    canvasContents[128 * y + x] = paletteIndex
-    imageData.data.set(paletteIndexToRgba(paletteIndex), canvasWidth * (y * 4) + x * 4)
+	canvasContents[128 * y + x] = paletteIndex
+	imageData.data.set(
+		paletteIndexToRgba(paletteIndex),
+		canvasWidth * (y * 4) + x * 4,
+	)
 }
 
 /**
  * @param xCenter {number}
  * @param yCenter {number}
  * @param radius {number}
- * @param paletteIndex {number} An integer between 0 and 255 that represents a colour.
+ * @param drawPaletteIndex {number} The colour to draw the circle in.
+ * @param replacePaletteIndex {number | undefined} If defined, only draw the circle
+ *                                                 to replace pixels that are currently this colour.
  */
-export function drawCircle(xCenter, yCenter, radius, paletteIndex) {
+export function drawCircle(
+	xCenter,
+	yCenter,
+	radius,
+	drawPaletteIndex,
+	replacePaletteIndex = undefined,
+) {
 	if (radius < 0) return
 
 	// loop through all pixels in a (2r+1)×(2r+1) square around (xCenter,yCenter)
@@ -59,8 +78,21 @@ export function drawCircle(xCenter, yCenter, radius, paletteIndex) {
 			if (dx * dx + dy * dy < radiusSquared) {
 				const x = xCenter + dx
 				const y = yCenter + dy
+
+				// if this pixel is within the circle's radius
 				if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
-					setPixel(x, y, paletteIndex)
+					
+					// if we are filtering to replace only specific pixel colours,
+					// and this pixel is not that colour,
+					// then skip it.
+					if (
+						replacePaletteIndex != undefined &&
+						getPixel(x, y) !== replacePaletteIndex
+					) {
+						continue
+					}
+
+					setPixel(x, y, drawPaletteIndex)
 				}
 			}
 		}

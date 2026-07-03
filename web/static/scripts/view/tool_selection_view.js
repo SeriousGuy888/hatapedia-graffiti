@@ -3,8 +3,11 @@ import { setSelectedTool } from "../model/tool_state.js"
 
 /** @type Record<Tool, HTMLButtonElement> */
 const toolButtons = {}
-toolButtons[Tool.BRUSH] = document.getElementById("brush-tool-button")
 toolButtons[Tool.ERASER] = document.getElementById("eraser-tool-button")
+toolButtons[Tool.BRUSH] = document.getElementById("brush-tool-button")
+toolButtons[Tool.MASKED_BRUSH] = document.getElementById(
+	"masked-brush-tool-button",
+)
 Object.freeze(toolButtons)
 
 console.log(toolButtons)
@@ -12,7 +15,7 @@ console.log(toolButtons)
 for (const tool in toolButtons) {
 	const toolButton = toolButtons[tool]
 	toolButton.addEventListener("click", () => {
-        selectThisButtonAndDeselectAllOthers(toolButton)
+		selectThisButtonAndDeselectAllOthers(toolButton)
 		setSelectedTool(tool)
 	})
 }

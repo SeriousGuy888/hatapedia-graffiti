@@ -10,7 +10,7 @@
         const MAX_UPLOAD_SIZE_BYTES = Number("{{ .MAX_UPLOAD_SIZE_BYTES }}") || 1 << 20
     </script>
     <script defer src="/static/image_upload.js"></script>
-    
+
     <script type="module" src="/static/scripts/view/canvas_controls_view.js" defer></script>
     <script type="module" src="/static/scripts/view/canvas_view.js" defer></script>
     <script type="module" src="/static/scripts/view/colour_picker_view.js" defer></script>
@@ -46,10 +46,15 @@
             </canvas>
         </div>
         <div id="graffiti-canvas-controls">
-            <button id="colour-picker-button" class="canvas-control-button" title="Open the colour picker."></button>
+            <div class="canvas-control-box" id="colour-picker-buttons-container">
+                <button id="colour-picker-button" class="canvas-control-button" title="Change brush colour."></button>
+                <button id="mask-picker-button" class="canvas-control-button" title="Change mask colour."></button>
+            </div>
             <button id="brush-tool-button" class="canvas-control-button" title="Select the brush tool">brush</button>
             <button id="eraser-tool-button" class="canvas-control-button"
                 title="Select the eraser tool.">eraser</button>
+            <button id="masked-brush-tool-button" class="canvas-control-button"
+                title="Select the masked brush tool.">masked<br>brush</button>
 
             <div style="flex-grow: 1;"></div>
 
@@ -63,9 +68,8 @@
                     <h3>Select Colour</h3>
                     <p>These are the colours that can appear in a Minecraft map in game.</p>
                 </div>
-                <div id="colour-picker-dialog-selected-colour">
-                    <span>Selected</span>
-                </div>
+                <button id="colour-picker-transparent-swatch" class="colour-picker-swatch" graffiti-palette-index="0">
+                </button>
             </div>
             <div id="colour-picker-swatch-box">
             </div>

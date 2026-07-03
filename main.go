@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const port = "5465"
 const dbConnectionString = "graffiti.sqlite3"
 const maxMemoryBytesForParsingImage int64 = 1 << 20
 const maxUploadRequestSize int64 = 1 << 20
@@ -26,6 +26,16 @@ type App struct {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	port, ok := os.LookupEnv("PORT")
+	if !ok {
+		fmt.Println("Warning: environment variable PORT not specified. Using default of 5465.")
+		port = "5465"
+	}
+
 	db, err := sql.Open("sqlite3", dbConnectionString)
 	if err != nil {
 		log.Fatal("failed to connect to database")

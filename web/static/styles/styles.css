@@ -37,6 +37,8 @@
 	flex-direction: column;
 	user-select: none;
 
+	max-width: 100px;
+
 	.canvas-control-button,
 	.canvas-control-box {
 		aspect-ratio: 1 / 1;
@@ -107,6 +109,10 @@
 				max-height: 100%;
 			}
 		}
+	}
+
+	#brush-width-slider {
+		max-width: 100%;
 	}
 }
 

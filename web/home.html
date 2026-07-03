@@ -11,6 +11,7 @@
     </script>
     <script defer src="/static/image_upload.js"></script>
 
+    <script type="module" src="/static/scripts/view/brush_width_view.js" defer></script>
     <script type="module" src="/static/scripts/view/canvas_controls_view.js" defer></script>
     <script type="module" src="/static/scripts/view/canvas_view.js" defer></script>
     <script type="module" src="/static/scripts/view/colour_picker_view.js" defer></script>
@@ -52,6 +53,10 @@
                 <button id="colour-swap-button" class="canvas-control-button" title="Swap the brush and mask colours.">
                     <img src="/static/images/icons/swap.png" alt="">
                 </button>
+            </div>
+            <div class="canvas-control-box">
+                <label for="brush-width-slider">Brush width</label>
+                <input type="range" id="brush-width-slider" min="1" max="16" step="1">
             </div>
             <button id="brush-tool-button" class="canvas-control-button" title="Select the brush tool">brush</button>
             <button id="eraser-tool-button" class="canvas-control-button"

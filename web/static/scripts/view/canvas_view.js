@@ -1,4 +1,4 @@
-import { getSelectedTool } from "../model/tool_state.js"
+import { getBrushWidth, getSelectedTool } from "../model/tool_state.js"
 import {
 	canvasHeight,
 	canvasWidth,
@@ -6,7 +6,10 @@ import {
 	imageData,
 } from "../model/canvas_state.js"
 import { Tool } from "../enums/tool_enums.js"
-import { getSelectedMaskPaletteIndex, getSelectedPaletteIndex } from "../model/colour_state.js"
+import {
+	getSelectedMaskPaletteIndex,
+	getSelectedPaletteIndex,
+} from "../model/colour_state.js"
 import { PALETTE_INDEX_TRANSPARENT } from "../utils/colour_utils.js"
 
 /**
@@ -82,7 +85,7 @@ function initCanvas() {
 			// if leftclicking
 
 			const deltaMouseSquaredDistance = deltaMouseX ** 2 + deltaMouseY ** 2
-			if (deltaMouseSquaredDistance > 5 * 5) {
+			if (deltaMouseSquaredDistance > getBrushWidth() ** 2) {
 				const numInterpolatedUses = Math.sqrt(deltaMouseSquaredDistance)
 
 				interpolateToolUsage(
@@ -111,18 +114,19 @@ function initCanvas() {
 
 function useToolAt(x, y) {
 	const selectedTool = getSelectedTool()
+	const brushWidth = getBrushWidth()
 	switch (selectedTool) {
 		case Tool.ERASER:
-			drawCircle(x, y, 4, PALETTE_INDEX_TRANSPARENT)
+			drawCircle(x, y, brushWidth, PALETTE_INDEX_TRANSPARENT)
 			break
 		case Tool.BRUSH:
-			drawCircle(x, y, 4, getSelectedPaletteIndex())
+			drawCircle(x, y, brushWidth, getSelectedPaletteIndex())
 			break
 		case Tool.MASKED_BRUSH:
 			drawCircle(
 				x,
 				y,
-				4,
+				brushWidth,
 				getSelectedPaletteIndex(),
 				getSelectedMaskPaletteIndex(),
 			)
@@ -161,13 +165,14 @@ function paintOverlays() {
 		return
 	}
 
-	if (mouseButtons & 1 && getSelectedTool() == Tool.BRUSH) {
+	if (mouseButtons & 1 && (getSelectedTool() === Tool.BRUSH || getSelectedTool() === Tool.MASKED_BRUSH)) {
 		return
 	}
 
+	const brushWidth = getBrushWidth()
 	overlayCtx.fillStyle = "black"
 	overlayCtx.beginPath()
-	overlayCtx.ellipse(mouseX, mouseY, 4, 4, 0, 0, Math.PI * 2)
+	overlayCtx.ellipse(mouseX, mouseY, brushWidth, brushWidth, 0, 0, Math.PI * 2)
 	overlayCtx.fill()
 }
 

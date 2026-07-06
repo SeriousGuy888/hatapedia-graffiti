@@ -165,7 +165,7 @@ func (app App) handlePostImage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// "http: no such file" is the message of ErrMissingFile, which isn't exported by Go,
 		// so i have to check for a string match here
-		if err.Error() == "no such file" {
+		if err.Error() == "http: no such file" {
 			http.Error(w, "You must provide an image file to upload.", http.StatusBadRequest)
 			return
 		}

@@ -33,10 +33,20 @@ function upload() {
 					alert("" + response.status + ": " + (await response.text()))
 					return
 				}
-				alert("Uploaded successfully: " + (await response.text()))
+
+				const { message, url } = await response.json()
+				if (
+					confirm(
+						"Uploaded successfully. " +
+							message +
+							"\n\nDo you want to open this URL in a new tab?",
+					)
+				) {
+					open(url, "_blank")
+				}
 			})
 			.catch((reason) => {
-				alert("Failed to send request: " + reason)
+				alert("Failed to upload: " + reason)
 				console.error(reason)
 			})
 	}, "image/png")

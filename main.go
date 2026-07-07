@@ -219,8 +219,11 @@ func (app App) handlePostImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "The image can be viewed at /image/%v.\nIt will be deleted after %v, which is at %v.",
-		id, uploadedImageLifespan, expiry.UTC().Format("2006-01-02 15:04 MST"))
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{
+		"message": "The image can be viewed at /image/%v.\nIt will be deleted after %v, which is at %v.",
+		"url": "/image/%v"
+	}`, id, uploadedImageLifespan, expiry.UTC().Format("2006-01-02 15:04 MST"), id)
 }
 
 func (app App) initDb() {

@@ -194,7 +194,8 @@ function paintOverlays() {
 	overlayCtx.beginPath()
 	if (
 		getSelectedTool() === Tool.BRUSH ||
-		getSelectedTool() === Tool.MASKED_BRUSH
+		getSelectedTool() === Tool.MASKED_BRUSH ||
+		getSelectedTool() === Tool.ERASER
 	) {
 		overlayCtx.ellipse(
 			mouseX + 0.5,

@@ -114,6 +114,12 @@
 	#brush-width-slider {
 		max-width: 100%;
 	}
+
+	#canvas-tool-buttons-container {
+		width: 100%;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
 }
 
 #colour-picker-dialog {

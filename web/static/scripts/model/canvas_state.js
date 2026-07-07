@@ -31,7 +31,7 @@ export function clearCanvas() {
  * @param y {number}
  */
 function getPixel(x, y) {
-	return canvasContents[128 * y + x]
+	return canvasContents[canvasWidth * y + x]
 }
 
 /**
@@ -40,11 +40,15 @@ function getPixel(x, y) {
  * @param paletteIndex {number} A uint8 that represents the pixel colour.
  */
 function setPixel(x, y, paletteIndex) {
-	canvasContents[128 * y + x] = paletteIndex
+	canvasContents[canvasWidth * y + x] = paletteIndex
 	imageData.data.set(
 		paletteIndexToRgba(paletteIndex),
 		canvasWidth * (y * 4) + x * 4,
 	)
+}
+
+function existsOnCanvas(x, y) {
+	return 0 <= x && x < canvasWidth && 0 <= y && y < canvasHeight
 }
 
 /**
@@ -81,7 +85,6 @@ export function drawCircle(
 
 				// if this pixel is within the circle's radius
 				if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
-					
 					// if we are filtering to replace only specific pixel colours,
 					// and this pixel is not that colour,
 					// then skip it.
@@ -95,6 +98,62 @@ export function drawCircle(
 					setPixel(x, y, drawPaletteIndex)
 				}
 			}
+		}
+	}
+}
+
+/**
+ * @param xStart {number}
+ * @param yStart {number}
+ * @param paletteIndex {number} The colour to draw floodfill with.
+ *
+ * Start at (x, y) on the canvas, and change the colour of that pixel
+ * as well as any orthogonally connected pixels of the same colour
+ * to the given palette index.
+ */
+export function floodFill(xStart, yStart, paletteIndex) {
+	const replacePaletteIndex = getPixel(xStart, yStart)
+
+	/** @type Array<[number, number]> */
+	const stack = []
+
+	/**
+	 * @type Set<number>
+	 * Each element in the set is a pixel index of the canvas.
+	 * A pixel (x, y) will correspond to pixel index y*canvasWidth+x.
+	 */
+	const visited = new Set()
+
+	stack.push([xStart, yStart])
+	while (stack.length > 0) {
+		const [xCurr, yCurr] = stack.pop()
+		const curr = getPixel(xCurr, yCurr)
+
+		if (curr === paletteIndex || curr !== replacePaletteIndex) {
+			// Don't do anything to this pixel if it is already
+			// the desired colour or if it isn't the colour to be
+			// replaced.
+			continue
+		}
+
+		setPixel(xCurr, yCurr, paletteIndex)
+		visited.add(yCurr * canvasWidth + xCurr)
+
+		const nexts = [
+			[xCurr - 1, yCurr],
+			[xCurr + 1, yCurr],
+			[xCurr, yCurr - 1],
+			[xCurr, yCurr + 1],
+		]
+		for (const [xNext, yNext] of nexts) {
+			if (!existsOnCanvas(xNext, yNext)) {
+				continue
+			}
+			if (visited.has(yNext * canvasWidth + xNext)) {
+				continue
+			}
+
+			stack.push([xNext, yNext])
 		}
 	}
 }

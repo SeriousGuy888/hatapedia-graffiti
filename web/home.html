@@ -60,15 +60,21 @@
                 <label for="brush-width-slider">Brush width</label>
                 <input type="range" id="brush-width-slider" min="1" max="16" step="1">
             </div>
-            <button id="brush-tool-button" class="canvas-control-button" title="Select the brush tool">brush</button>
-            <button id="eraser-tool-button" class="canvas-control-button"
-                title="Select the eraser tool.">eraser</button>
-            <button id="masked-brush-tool-button" class="canvas-control-button"
-                title="Select the masked brush tool.">masked<br>brush</button>
+            <div id="canvas-tool-buttons-container">
+                <button id="eraser-tool-button" class="canvas-control-button"
+                    title="Select the eraser tool.">eraser</button>
+                <button id="bucket-tool-button" class="canvas-control-button"
+                    title="Select the paint bucket tool.">paint<br>bucket</button>
+                <button id="brush-tool-button" class="canvas-control-button"
+                    title="Select the brush tool">brush</button>
+                <button id="masked-brush-tool-button" class="canvas-control-button"
+                    title="Select the masked brush tool.">masked<br>brush</button>
+            </div>
 
             <div style="flex-grow: 1;"></div>
 
-            <button id="upload-canvas-button" class="canvas-control-button" title="Upload the canvas and get a URL for the image.">
+            <button id="upload-canvas-button" class="canvas-control-button"
+                title="Upload the canvas and get a URL for the image.">
                 upload
             </button>
             <button id="clear-canvas-button" class="canvas-control-button" title="Clear the canvas.">

@@ -3,6 +3,7 @@ import {
 	canvasHeight,
 	canvasWidth,
 	drawCircle,
+	floodFill,
 	imageData,
 } from "../model/canvas_state.js"
 import { Tool } from "../enums/tool_enums.js"
@@ -84,6 +85,10 @@ function initCanvas() {
 		mouseXPrevious = mouseX
 		mouseYPrevious = mouseY
 
+		if (getSelectedTool() === Tool.BUCKET) {
+			return
+		}
+
 		if (mouseButtons & 1) {
 			// if leftclicking
 
@@ -105,7 +110,10 @@ function initCanvas() {
 
 	canvas.addEventListener("mousedown", (event) => {
 		mouseButtons = event.buttons
-		useToolAt(mouseX, mouseY)
+
+		if (mouseButtons & 1) {
+			useToolAt(mouseX, mouseY)
+		}
 	})
 
 	canvas.addEventListener("mouseup", (event) => {
@@ -133,6 +141,11 @@ function useToolAt(x, y) {
 				getSelectedPaletteIndex(),
 				getSelectedMaskPaletteIndex(),
 			)
+			break
+		case Tool.BUCKET:
+			console.time("floodfill")
+			floodFill(x, y, getSelectedPaletteIndex())
+			console.timeEnd("floodfill")
 			break
 		default:
 			console.error(
@@ -168,11 +181,7 @@ function paintOverlays() {
 		return
 	}
 
-	if (
-		mouseButtons & 1 &&
-		(getSelectedTool() === Tool.BRUSH ||
-			getSelectedTool() === Tool.MASKED_BRUSH)
-	) {
+	if (mouseButtons & 1 && getSelectedTool() !== Tool.ERASER) {
 		return
 	}
 
@@ -181,16 +190,24 @@ function paintOverlays() {
 		getSelectedTool() === Tool.ERASER
 			? "black"
 			: paletteIndexToRgbaCssString(getSelectedPaletteIndex())
+
 	overlayCtx.beginPath()
-	overlayCtx.ellipse(
-		mouseX + 0.5,
-		mouseY + 0.5,
-		brushWidth,
-		brushWidth,
-		0,
-		0,
-		Math.PI * 2,
-	)
+	if (
+		getSelectedTool() === Tool.BRUSH ||
+		getSelectedTool() === Tool.MASKED_BRUSH
+	) {
+		overlayCtx.ellipse(
+			mouseX + 0.5,
+			mouseY + 0.5,
+			brushWidth,
+			brushWidth,
+			0,
+			0,
+			Math.PI * 2,
+		)
+	} else {
+		overlayCtx.rect(mouseX, mouseY, 1, 1)
+	}
 	overlayCtx.fill()
 }
 

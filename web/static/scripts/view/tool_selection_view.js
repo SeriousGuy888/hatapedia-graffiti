@@ -8,6 +8,7 @@ toolButtons[Tool.BRUSH] = document.getElementById("brush-tool-button")
 toolButtons[Tool.MASKED_BRUSH] = document.getElementById(
 	"masked-brush-tool-button",
 )
+toolButtons[Tool.BUCKET] = document.getElementById("bucket-tool-button")
 Object.freeze(toolButtons)
 
 console.log(toolButtons)
